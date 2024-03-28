@@ -1148,7 +1148,7 @@ class TestModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        return self.name or f"test-model-{self.pk}"
 endef
 
 define MODEL_FORM_TEST_ADMIN
