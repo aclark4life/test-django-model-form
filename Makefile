@@ -1137,7 +1137,7 @@ define HTML_OFFCANVAS
 </div>
 endef
 
-define MODEL_FORM_TEST
+define MODEL_FORM_TEST_MODEL
 from django.db import models
 
 class TestModel(models.Model):
@@ -1149,6 +1149,14 @@ class TestModel(models.Model):
 
     def __str__(self):
         return self.name
+endef
+
+define MODEL_FORM_TEST_ADMIN
+from django.contrib import admin
+
+from .models import TestModel
+
+admin.site.register(TestModel, TestModelAdmin)
 endef
 
 define PRIVACY_PAGE_MODEL
@@ -1551,7 +1559,8 @@ export HTML_HEADER
 export HTML_OFFCANVAS
 export INTERNAL_IPS
 export JENKINS_FILE
-export MODEL_FORM_TEST
+export MODEL_FORM_TEST_MODEL
+export MODEL_FORM_TEST_ADMIN
 export PRIVACY_PAGE_MODEL
 export REST_FRAMEWORK
 export FRONTEND_CONTEXT_INDEX
@@ -1748,7 +1757,8 @@ django-migrations-show-default:
 
 django-model-form-test:
 	python manage.py startapp modelformtest
-	@echo "$$MODEL_FORM_TEST" > modelformtest/models.py
+	@echo "$$MODEL_FORM_TEST_MODEL" > modelformtest/models.py
+	@echo "$$MODEL_FORM_TEST_ADMIN" > modelformtest/admin.py
 	python manage.py makemigrations
 	$(GIT_ADD) modelformtest
 
