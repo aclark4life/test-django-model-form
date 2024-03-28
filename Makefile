@@ -1153,10 +1153,11 @@ endef
 
 define MODEL_FORM_TEST_ADMIN
 from django.contrib import admin
-
 from .models import TestModel
 
-admin.site.register(TestModel, TestModelAdmin)
+@admin.register(TestModel)
+class TestModelAdmin(admin.ModelAdmin):
+    pass
 endef
 
 define PRIVACY_PAGE_MODEL
