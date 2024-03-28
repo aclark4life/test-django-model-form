@@ -1141,9 +1141,9 @@ define MODEL_FORM_TEST_MODEL
 from django.db import models
 
 class TestModel(models.Model):
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    age = models.IntegerField()
+    name = models.CharField(max_length=100, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    age = models.IntegerField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -1756,12 +1756,13 @@ django-migrations-default:
 django-migrations-show-default:
 	python manage.py showmigrations
 
-django-model-form-test:
+django-model-form-test-default:
 	python manage.py startapp modelformtest
 	@echo "$$MODEL_FORM_TEST_MODEL" > modelformtest/models.py
 	@echo "$$MODEL_FORM_TEST_ADMIN" > modelformtest/admin.py
-	python manage.py makemigrations
 	$(GIT_ADD) modelformtest
+	@echo "INSTALLED_APPS.append('siteuser')" >> $(SETTINGS)
+	python manage.py makemigrations
 
 django-serve-default:
 	cd frontend; npm run watch &
@@ -2178,6 +2179,8 @@ wagtail-init-default: db-init wagtail-install wagtail-start
 		$(MAKE) wagtail-sitepage
 	export SETTINGS=backend/settings/base.py; \
 		$(MAKE) django-crispy
+	export SETTINGS=backend/settings/base.py; \
+		$(MAKE) django-model-form-test
 	$(MAKE) django-migrations
 	$(MAKE) django-migrate
 	$(MAKE) su
