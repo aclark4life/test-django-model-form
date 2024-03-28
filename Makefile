@@ -1760,9 +1760,9 @@ django-model-form-test-default:
 	python manage.py startapp modelformtest
 	@echo "$$MODEL_FORM_TEST_MODEL" > modelformtest/models.py
 	@echo "$$MODEL_FORM_TEST_ADMIN" > modelformtest/admin.py
-	$(GIT_ADD) modelformtest
 	@echo "INSTALLED_APPS.append('modelformtest')" >> $(SETTINGS)
 	python manage.py makemigrations
+	$(GIT_ADD) modelformtest
 
 django-serve-default:
 	cd frontend; npm run watch &
