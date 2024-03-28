@@ -1137,6 +1137,20 @@ define HTML_OFFCANVAS
 </div>
 endef
 
+define MODEL_FORM_TEST
+from django.db import models
+
+class TestModel(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    age = models.IntegerField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+endef
+
 define PRIVACY_PAGE_MODEL
 from wagtail.models import Page
 from wagtail.admin.panels import FieldPanel
@@ -1537,6 +1551,7 @@ export HTML_HEADER
 export HTML_OFFCANVAS
 export INTERNAL_IPS
 export JENKINS_FILE
+export MODEL_FORM_TEST
 export PRIVACY_PAGE_MODEL
 export REST_FRAMEWORK
 export FRONTEND_CONTEXT_INDEX
@@ -1730,6 +1745,12 @@ django-migrations-default:
 
 django-migrations-show-default:
 	python manage.py showmigrations
+
+django-model-form-test:
+	python manage.py startapp modelformtest
+	@echo "$$MODEL_FORM_TEST" > modelformtest/models.py
+	python manage.py makemigrations
+	$(GIT_ADD) modelformtest
 
 django-serve-default:
 	cd frontend; npm run watch &
