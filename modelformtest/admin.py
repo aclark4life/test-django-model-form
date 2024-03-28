@@ -1,5 +1,7 @@
 from django.contrib import admin
-
 from .models import TestModel
 
-admin.site.register(TestModel, TestModelAdmin)
+
+@admin.register(TestModel)
+class TestModelAdmin(admin.ModelAdmin):
+    pass
