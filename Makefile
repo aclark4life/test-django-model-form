@@ -1933,7 +1933,7 @@ lint-default:
 
 make-default:
 	$(GIT_ADD) Makefile
-	-git commit -a -m "Add/update project-makefile files"
+	-git commit Makefile -m "Add/update project-makefile files"
 	-git push
 
 pip-freeze-default:
