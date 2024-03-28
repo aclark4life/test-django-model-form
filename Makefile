@@ -1761,7 +1761,7 @@ django-model-form-test-default:
 	@echo "$$MODEL_FORM_TEST_MODEL" > modelformtest/models.py
 	@echo "$$MODEL_FORM_TEST_ADMIN" > modelformtest/admin.py
 	$(GIT_ADD) modelformtest
-	@echo "INSTALLED_APPS.append('siteuser')" >> $(SETTINGS)
+	@echo "INSTALLED_APPS.append('modelformtest')" >> $(SETTINGS)
 	python manage.py makemigrations
 
 django-serve-default:
