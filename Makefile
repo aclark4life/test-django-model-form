@@ -19,7 +19,7 @@ PROJECT_MAKEFILE := project.mk
 PROJECT_NAME = project-makefile
 PROJECT_DIRS = backend contactpage home privacy siteuser
 
-WAGTAIL_CLEAN_DIRS = home search backend sitepage siteuser privacy frontend contactpage
+WAGTAIL_CLEAN_DIRS = home search backend sitepage siteuser privacy frontend contactpage modelformtest
 WAGTAIL_CLEAN_FILES = README.rst .dockerignore Dockerfile manage.py requirements.txt
 
 REVIEW_EDITOR = subl
