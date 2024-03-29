@@ -383,6 +383,7 @@ const UserMenu = ({ isAuthenticated, isSuperuser, textColor }) => {
           </a>
           <ul className="dropdown-menu">
             <li><a className="dropdown-item" href="/user/profile">Profile</a></li>
+            <li><a className="dropdown-item" href="/modelformtest/test-models">Model Form Test</a></li>
             {isSuperuser ? (
               <>
                 <li><hr className="dropdown-divider"></hr></li>
@@ -674,6 +675,9 @@ define HOME_PAGE_TEMPLATE
 {% endblock %}
 endef
 
+define INDEX_HTML
+<h1>Hello world</h1>
+endef
 
 define JENKINS_FILE
 pipeline {
@@ -777,6 +781,7 @@ urlpatterns = [
     path('wagtail/', include(wagtailadmin_urls)),
     path('user/', include('siteuser.urls')),
     path('search/', include('search.urls')),
+    path('modelformtest/', include('modelformtest.urls')),
 ]
 
 if settings.DEBUG:
@@ -1139,6 +1144,7 @@ endef
 
 define MODEL_FORM_TEST_MODEL
 from django.db import models
+from django.shortcuts import reverse
 
 class TestModel(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
@@ -1149,6 +1155,9 @@ class TestModel(models.Model):
 
     def __str__(self):
         return self.name or f"test-model-{self.pk}"
+
+    def get_absolute_url(self):
+        return reverse('test_model_detail', kwargs={'pk': self.pk})
 endef
 
 define MODEL_FORM_TEST_ADMIN
@@ -1158,6 +1167,102 @@ from .models import TestModel
 @admin.register(TestModel)
 class TestModelAdmin(admin.ModelAdmin):
     pass
+endef
+
+define MODEL_FORM_TEST_VIEWS
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import ListView, CreateView, UpdateView, DetailView
+from .models import TestModel
+from .forms import TestModelForm
+
+class TestModelListView(ListView):
+    model = TestModel
+    template_name = 'test_model_list.html'  # Update with your template name
+    context_object_name = 'test_models'
+
+class TestModelCreateView(CreateView):
+    model = TestModel
+    form_class = TestModelForm
+    template_name = 'test_model_form.html'  # Update with your template name
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        return super().form_valid(form)
+
+class TestModelUpdateView(UpdateView):
+    model = TestModel
+    form_class = TestModelForm
+    template_name = 'test_model_form.html'  # Update with your template name
+
+class TestModelDetailView(DetailView):
+    model = TestModel
+    template_name = 'test_model_detail.html'  # Update with your template name
+    context_object_name = 'test_model'
+endef
+
+define MODEL_FORM_TEST_FORMS
+from django import forms
+from .models import TestModel
+
+class TestModelForm(forms.ModelForm):
+    class Meta:
+        model = TestModel
+        fields = ['name', 'email', 'age', 'is_active']  # Add or remove fields as needed
+endef
+
+define MODEL_FORM_TEST_TEMPLATE_FORM
+{% extends 'base.html' %}
+{% block content %}
+    <h1>{% if form.instance.pk %}Update Test Model{% else %}Create Test Model{% endif %}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+{% endblock %}
+endef
+
+define MODEL_FORM_TEST_TEMPLATE_DETAIL
+{% extends 'base.html' %}
+{% block content %}
+    <h1>Test Model Detail: {{ test_model.name }}</h1>
+    <p>Name: {{ test_model.name }}</p>
+    <p>Email: {{ test_model.email }}</p>
+    <p>Age: {{ test_model.age }}</p>
+    <p>Active: {{ test_model.is_active }}</p>
+    <p>Created At: {{ test_model.created_at }}</p>
+    <a href="{% url 'test_model_update' test_model.pk %}">Edit Test Model</a>
+{% endblock %}
+endef
+
+define MODEL_FORM_TEST_TEMPLATE_LIST
+{% extends 'base.html' %}
+{% block content %}
+    <h1>Test Models List</h1>
+    <ul>
+        {% for test_model in test_models %}
+            <li><a href="{% url 'test_model_detail' test_model.pk %}">{{ test_model.name }}</a></li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'test_model_create' %}">Create New Test Model</a>
+{% endblock %}
+endef
+
+define MODEL_FORM_TEST_URLS
+from django.urls import path
+from .views import (
+    TestModelListView,
+    TestModelCreateView,
+    TestModelUpdateView,
+    TestModelDetailView,
+)
+
+urlpatterns = [
+    path('test-models/', TestModelListView.as_view(), name='test_model_list'),
+    path('test-models/create/', TestModelCreateView.as_view(), name='test_model_create'),
+    path('test-models/<int:pk>/update/', TestModelUpdateView.as_view(), name='test_model_update'),
+    path('test-models/<int:pk>/', TestModelDetailView.as_view(), name='test_model_detail'),
+]
 endef
 
 define PRIVACY_PAGE_MODEL
@@ -1558,10 +1663,17 @@ export HOME_PAGE_TEMPLATE
 export HTML_FOOTER
 export HTML_HEADER
 export HTML_OFFCANVAS
+export INDEX_HTML
 export INTERNAL_IPS
 export JENKINS_FILE
-export MODEL_FORM_TEST_MODEL
 export MODEL_FORM_TEST_ADMIN
+export MODEL_FORM_TEST_FORMS
+export MODEL_FORM_TEST_MODEL
+export MODEL_FORM_TEST_URLS
+export MODEL_FORM_TEST_VIEWS
+export MODEL_FORM_TEST_TEMPLATE_DETAIL
+export MODEL_FORM_TEST_TEMPLATE_FORM
+export MODEL_FORM_TEST_TEMPLATE_LIST
 export PRIVACY_PAGE_MODEL
 export REST_FRAMEWORK
 export FRONTEND_CONTEXT_INDEX
@@ -1758,8 +1870,15 @@ django-migrations-show-default:
 
 django-model-form-test-default:
 	python manage.py startapp modelformtest
-	@echo "$$MODEL_FORM_TEST_MODEL" > modelformtest/models.py
 	@echo "$$MODEL_FORM_TEST_ADMIN" > modelformtest/admin.py
+	@echo "$$MODEL_FORM_TEST_FORMS" > modelformtest/forms.py
+	@echo "$$MODEL_FORM_TEST_MODEL" > modelformtest/models.py
+	@echo "$$MODEL_FORM_TEST_URLS" > modelformtest/urls.py
+	@echo "$$MODEL_FORM_TEST_VIEWS" > modelformtest/views.py
+	$(ADD_DIR) modelformtest/templates/modelformtest
+	@echo "$$MODEL_FORM_TEST_TEMPLATE_DETAIL" > modelformtest/templates/test_model_detail.html
+	@echo "$$MODEL_FORM_TEST_TEMPLATE_FORM" > modelformtest/templates/test_model_form.html
+	@echo "$$MODEL_FORM_TEST_TEMPLATE_LIST" > modelformtest/templates/modelformtest/testmodel_list.html
 	@echo "INSTALLED_APPS.append('modelformtest')" >> $(SETTINGS)
 	python manage.py makemigrations
 	$(GIT_ADD) modelformtest
@@ -1934,6 +2053,9 @@ help-default:
             | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' \
             | xargs | tr ' ' '\n' \
             | awk '{printf "%s\n", $$0}' ; done | less # http://stackoverflow.com/a/26339924
+
+index-default:
+	@echo "$$INDEX_HTML" > index.html
 
 jenkins-init-default:
 	@echo "$$JENKINS_FILE" > Jenkinsfile
@@ -2159,6 +2281,8 @@ wagtail-init-default: db-init wagtail-install wagtail-start
 	@echo "$$DOCKERFILE" > Dockerfile
 	export SETTINGS=backend/settings/base.py DEV_SETTINGS=backend/settings/dev.py; \
 		$(MAKE) django-settings
+	export SETTINGS=backend/settings/base.py; \
+		$(MAKE) django-model-form-test
 	export URLS=urls.py; \
 		$(MAKE) django-url-patterns
 	$(GIT_ADD) backend
@@ -2179,8 +2303,6 @@ wagtail-init-default: db-init wagtail-install wagtail-start
 		$(MAKE) wagtail-sitepage
 	export SETTINGS=backend/settings/base.py; \
 		$(MAKE) django-crispy
-	export SETTINGS=backend/settings/base.py; \
-		$(MAKE) django-model-form-test
 	$(MAKE) django-migrations
 	$(MAKE) django-migrate
 	$(MAKE) su

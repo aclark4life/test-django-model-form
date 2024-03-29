@@ -26,4 +26,3 @@ class TestModelDetailView(DetailView):
     model = TestModel
     template_name = 'test_model_detail.html'  # Update with your template name
     context_object_name = 'test_model'
-
