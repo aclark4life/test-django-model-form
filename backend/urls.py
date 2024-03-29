@@ -17,6 +17,7 @@ urlpatterns = [
     path('wagtail/', include(wagtailadmin_urls)),
     path('user/', include('siteuser.urls')),
     path('search/', include('search.urls')),
+    path('modelformtest/', include('modelformtest.urls')),
 ]
 
 if settings.DEBUG:
